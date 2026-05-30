@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="ru">
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>GitHub Deployer — Test Button</title>
+	<style>
+		* { box-sizing: border-box; }
+		body {
+			margin: 0;
+			padding: 16px;
+			font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+			background: radial-gradient(circle at 80% 0%, rgba(0,216,255,.2), transparent 340px), #05070c;
+			color: #fff;
+		}
+		.wrap { width: min(760px, 100%); margin: 0 auto; }
+		.card {
+			margin-top: 14px;
+			padding: 18px;
+			border-radius: 24px;
+			border: 1px solid rgba(255,255,255,.14);
+			background: rgba(255,255,255,.07);
+		}
+		h1 {
+			margin: 0 0 12px;
+			font-size: clamp(32px, 8vw, 64px);
+			line-height: .94;
+			letter-spacing: -.06em;
+		}
+		p { color: rgba(255,255,255,.65); line-height: 1.45; }
+		label {
+			display: block;
+			margin: 14px 0 7px;
+			color: rgba(255,255,255,.65);
+			font-size: 13px;
+		}
+		input {
+			width: 100%;
+			min-height: 52px;
+			padding: 0 14px;
+			border-radius: 16px;
+			border: 1px solid rgba(255,255,255,.14);
+			background: rgba(255,255,255,.06);
+			color: #fff;
+			font-size: 16px;
+		}
+		button {
+			width: 100%;
+			min-height: 56px;
+			margin-top: 16px;
+			border: 0;
+			border-radius: 999px;
+			background: #fff;
+			color: #05070c;
+			font-weight: 800;
+			font-size: 16px;
+		}
+		button.secondary {
+			background: rgba(255,255,255,.1);
+			color: #fff;
+			border: 1px solid rgba(255,255,255,.14);
+		}
+		.status {
+			min-height: 220px;
+			max-height: 520px;
+			overflow: auto;
+			padding: 14px;
+			border-radius: 16px;
+			background: rgba(0,0,0,.32);
+			border: 1px solid rgba(255,255,255,.1);
+			font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+			font-size: 12px;
+			line-height: 1.5;
+			white-space: pre-wrap;
+			color: rgba(255,255,255,.78);
+		}
+		.good { color: #51ffd6; }
+		.bad { color: #ff6a86; }
+		code {
+			background: rgba(255,255,255,.1);
+			padding: 2px 6px;
+			border-radius: 7px;
+		}
+	</style>
+</head>
+<body>
+	<main class="wrap">
+		<div class="card">
+			<h1>GitHub Deployer</h1>
+			<p>Это диагностическая версия. Сначала нажми «Проверить кнопку». Если внизу появился текст — JavaScript работает.</p>
+		</div>
+
+		<div class="card">
+			<button id="testBtn" type="button">Проверить кнопку</button>
+
+			<label for="owner">GitHub login / owner</label>
+			<input id="owner" type="text" placeholder="например: and1marat9">
+
+			<label for="repo">Repository</label>
+			<input id="repo" type="text" placeholder="например: limitless-preview">
+
+			<label for="branch">Branch</label>
+			<input id="branch" type="text" value="main">
+
+			<label for="token">Fine-grained GitHub token</label>
+			<input id="token" type="password" placeholder="github_pat_...">
+
+			<label for="zip">ZIP с сайтом</label>
+			<input id="zip" type="file" accept=".zip,application/zip">
+
+			<button id="deployBtn" type="button">Залить сайт в GitHub</button>
+			<button id="clearBtn" type="button" class="secondary">Очистить лог</button>
+		</div>
+
+		<div class="card">
+			<div class="status" id="status">Страница загружена. Сейчас проверяю JavaScript...</div>
+		</div>
+
+		<div class="card">
+			<p>
+				Если кнопки вообще не пишут ничего в лог, открой этот HTML не внутри предпросмотра ChatGPT, а через Safari:
+				<code>Поделиться → Открыть в Safari</code> или скачай файл в «Файлы» и открой оттуда.
+			</p>
+		</div>
+	</main>
+
+	<script>
+		(function () {
+			const status = document.getElementById("status");
+			const testBtn = document.getElementById("testBtn");
+			const deployBtn = document.getElementById("deployBtn");
+			const clearBtn = document.getElementById("clearBtn");
+
+			function log(message, type) {
+				const time = new Date().toLocaleTimeString();
+				const prefix = type === "good" ? "✅" : type === "bad" ? "❌" : "•";
+				status.innerHTML += "\n" + prefix + " [" + time + "] " + escapeHtml(message);
+				status.scrollTop = status.scrollHeight;
+			}
+
+			function setLog(message) {
+				status.textContent = message;
+			}
+
+			function escapeHtml(str) {
+				return String(str)
+					.replaceAll("&", "&amp;")
+					.replaceAll("<", "&lt;")
+					.replaceAll(">", "&gt;");
+			}
+
+			window.addEventListener("error", function (event) {
+				log("Ошибка JS: " + event.message, "bad");
+			});
+
+			window.addEventListener("unhandledrejection", function (event) {
+				log("Promise error: " + (event.reason && event.reason.message ? event.reason.message : event.reason), "bad");
+			});
+
+			testBtn.addEventListener("click", function () {
+				log("Кнопка работает. JavaScript в этом окне выполняется.", "good");
+			});
+
+			clearBtn.addEventListener("click", function () {
+				setLog("Лог очищен.");
+			});
+
+			deployBtn.addEventListener("click", async function () {
+				log("Клик по кнопке деплоя получен.", "good");
+
+				const owner = document.getElementById("owner").value.trim();
+				const repo = document.getElementById("repo").value.trim();
+				const branch = document.getElementById("branch").value.trim();
+				const token = document.getElementById("token").value.trim();
+				const zip = document.getElementById("zip").files[0];
+
+				if (!owner || !repo || !branch || !token || !zip) {
+					log("Не все поля заполнены. Нужно owner, repo, branch, token и ZIP.", "bad");
+					return;
+				}
+
+				log("Поля заполнены. Дальше нужна полная версия деплоера с распаковкой ZIP.", "good");
+				log("Если обычный деплоер молчит, значит он не выполняется в текущем просмотрщике или не загрузилась библиотека JSZip.", "bad");
+			});
+
+			setLog("JavaScript работает. Нажми «Проверить кнопку».");
+		})();
+	</script>
+</body>
+</html>
