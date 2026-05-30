@@ -2,39 +2,100 @@
 <html lang="ru">
 <head>
 	<meta charset="UTF-8" />
-	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-	<title>GitHub Deployer — Test Button</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+	<title>GitHub ZIP Deployer</title>
 	<style>
 		* { box-sizing: border-box; }
-		body {
+
+		:root {
+			--bg: #05070c;
+			--card: rgba(255,255,255,.075);
+			--line: rgba(255,255,255,.12);
+			--text: rgba(255,255,255,.94);
+			--muted: rgba(255,255,255,.62);
+			--soft: rgba(255,255,255,.42);
+			--blue: #125cff;
+			--cyan: #00d8ff;
+			--violet: #8a5cff;
+			--danger: #ff5975;
+			--success: #51ffd6;
+		}
+
+		html, body {
 			margin: 0;
-			padding: 16px;
+			min-height: 100%;
 			font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-			background: radial-gradient(circle at 80% 0%, rgba(0,216,255,.2), transparent 340px), #05070c;
-			color: #fff;
+			background:
+				radial-gradient(circle at 80% 0%, rgba(0,216,255,.18), transparent 360px),
+				radial-gradient(circle at 0% 20%, rgba(138,92,255,.16), transparent 340px),
+				var(--bg);
+			color: var(--text);
 		}
-		.wrap { width: min(760px, 100%); margin: 0 auto; }
+
+		body { padding: 16px; }
+
+		.wrap {
+			width: min(920px, 100%);
+			margin: 0 auto;
+			padding: 18px 0 44px;
+		}
+
+		.hero,
 		.card {
-			margin-top: 14px;
+			border: 1px solid var(--line);
+			border-radius: 28px;
+			background: var(--card);
+			backdrop-filter: blur(20px);
+			box-shadow: 0 30px 100px rgba(0,0,0,.25);
+		}
+
+		.hero {
+			position: relative;
+			overflow: hidden;
+			padding: 26px;
+		}
+
+		.hero::before {
+			content: "";
+			position: absolute;
+			right: -120px;
+			top: -120px;
+			width: 340px;
+			height: 340px;
+			border-radius: 50%;
+			background: radial-gradient(circle, rgba(0,216,255,.30), transparent 70%);
+			filter: blur(12px);
+		}
+
+		.card {
 			padding: 18px;
-			border-radius: 24px;
-			border: 1px solid rgba(255,255,255,.14);
-			background: rgba(255,255,255,.07);
+			margin-top: 14px;
 		}
+
 		h1 {
-			margin: 0 0 12px;
-			font-size: clamp(32px, 8vw, 64px);
+			position: relative;
+			margin: 0;
+			font-size: clamp(34px, 8vw, 72px);
 			line-height: .94;
-			letter-spacing: -.06em;
+			letter-spacing: -.07em;
 		}
-		p { color: rgba(255,255,255,.65); line-height: 1.45; }
+
+		p {
+			position: relative;
+			color: var(--muted);
+			line-height: 1.45;
+		}
+
 		label {
 			display: block;
 			margin: 14px 0 7px;
-			color: rgba(255,255,255,.65);
+			color: var(--muted);
 			font-size: 13px;
 		}
-		input {
+
+		input[type="text"],
+		input[type="password"],
+		input[type="file"] {
 			width: 100%;
 			min-height: 52px;
 			padding: 0 14px;
@@ -43,25 +104,67 @@
 			background: rgba(255,255,255,.06);
 			color: #fff;
 			font-size: 16px;
+			outline: none;
 		}
+
+		input[type="file"] {
+			height: auto;
+			padding: 13px;
+		}
+
+		input:focus {
+			border-color: rgba(0,216,255,.5);
+			box-shadow: 0 0 0 4px rgba(0,216,255,.09);
+		}
+
+		.row {
+			display: grid;
+			gap: 12px;
+		}
+
+		.check {
+			display: flex;
+			gap: 10px;
+			align-items: flex-start;
+			color: var(--muted);
+			font-size: 14px;
+			line-height: 1.35;
+			margin-top: 12px;
+		}
+
+		.check input {
+			margin-top: 2px;
+			accent-color: var(--cyan);
+		}
+
 		button {
 			width: 100%;
-			min-height: 56px;
+			min-height: 58px;
 			margin-top: 16px;
 			border: 0;
 			border-radius: 999px;
 			background: #fff;
 			color: #05070c;
-			font-weight: 800;
+			font-weight: 850;
 			font-size: 16px;
+			cursor: pointer;
+			box-shadow: 0 20px 70px rgba(0,0,0,.35);
 		}
+
 		button.secondary {
 			background: rgba(255,255,255,.1);
 			color: #fff;
 			border: 1px solid rgba(255,255,255,.14);
+			box-shadow: none;
 		}
+
+		button:disabled {
+			opacity: .5;
+			cursor: not-allowed;
+		}
+
 		.status {
-			min-height: 220px;
+			min-height: 260px;
 			max-height: 520px;
 			overflow: auto;
 			padding: 14px;
@@ -74,117 +177,482 @@
 			white-space: pre-wrap;
 			color: rgba(255,255,255,.78);
 		}
-		.good { color: #51ffd6; }
-		.bad { color: #ff6a86; }
+
+		.result {
+			display: none;
+			margin-top: 14px;
+			padding: 16px;
+			border-radius: 18px;
+			background: rgba(81,255,214,.08);
+			border: 1px solid rgba(81,255,214,.22);
+			line-height: 1.45;
+		}
+
+		.result a {
+			color: #fff;
+			font-weight: 850;
+		}
+
+		.hint {
+			color: var(--soft);
+			font-size: 13px;
+			line-height: 1.45;
+		}
+
 		code {
 			background: rgba(255,255,255,.1);
 			padding: 2px 6px;
 			border-radius: 7px;
 		}
+
+		.warn {
+			color: #ffd28a;
+		}
+
+		@media (min-width: 760px) {
+			body { padding: 28px; }
+			.hero { padding: 38px; }
+			.row { grid-template-columns: repeat(2, 1fr); }
+			.grid { display: grid; grid-template-columns: 1fr .9fr; gap: 14px; align-items: start; }
+			.card { margin-top: 14px; }
+		}
 	</style>
 </head>
 <body>
 	<main class="wrap">
-		<div class="card">
-			<h1>GitHub Deployer</h1>
-			<p>Это диагностическая версия. Сначала нажми «Проверить кнопку». Если внизу появился текст — JavaScript работает.</p>
-		</div>
+		<section class="hero">
+			<h1>ZIP → GitHub Pages</h1>
+			<p>Выбираешь ZIP с сайтом, деплоер распаковывает архив прямо в браузере и заливает все файлы в GitHub одним commit.</p>
+		</section>
 
-		<div class="card">
-			<button id="testBtn" type="button">Проверить кнопку</button>
+		<section class="grid">
+			<div class="card">
+				<div class="row">
+					<div>
+						<label for="owner">GitHub login / owner</label>
+						<input id="owner" type="text" placeholder="например: neotwalker" autocomplete="username">
+					</div>
 
-			<label for="owner">GitHub login / owner</label>
-			<input id="owner" type="text" placeholder="например: and1marat9">
+					<div>
+						<label for="repo">Repository сайта</label>
+						<input id="repo" type="text" placeholder="например: limitless-preview">
+					</div>
 
-			<label for="repo">Repository</label>
-			<input id="repo" type="text" placeholder="например: limitless-preview">
+					<div>
+						<label for="branch">Branch</label>
+						<input id="branch" type="text" value="main">
+					</div>
 
-			<label for="branch">Branch</label>
-			<input id="branch" type="text" value="main">
+					<div>
+						<label for="message">Commit message</label>
+						<input id="message" type="text" value="Deploy website from ZIP">
+					</div>
+				</div>
 
-			<label for="token">Fine-grained GitHub token</label>
-			<input id="token" type="password" placeholder="github_pat_...">
+				<label for="token">Fine-grained GitHub token</label>
+				<input id="token" type="password" placeholder="github_pat_..." autocomplete="off">
 
-			<label for="zip">ZIP с сайтом</label>
-			<input id="zip" type="file" accept=".zip,application/zip">
+				<label for="zip">ZIP с сайтом</label>
+				<input id="zip" type="file" accept=".zip,application/zip">
 
-			<button id="deployBtn" type="button">Залить сайт в GitHub</button>
-			<button id="clearBtn" type="button" class="secondary">Очистить лог</button>
-		</div>
+				<label class="check">
+					<input id="stripRoot" type="checkbox" checked>
+					<span>Если в архиве одна верхняя папка, убрать её и залить содержимое в корень репозитория</span>
+				</label>
 
-		<div class="card">
-			<div class="status" id="status">Страница загружена. Сейчас проверяю JavaScript...</div>
-		</div>
+				<label class="check">
+					<input id="ignoreSystem" type="checkbox" checked>
+					<span>Игнорировать служебные файлы: <code>__MACOSX</code>, <code>.DS_Store</code>, <code>wordpress-image-snippets.php</code></span>
+				</label>
 
-		<div class="card">
-			<p>
-				Если кнопки вообще не пишут ничего в лог, открой этот HTML не внутри предпросмотра ChatGPT, а через Safari:
-				<code>Поделиться → Открыть в Safari</code> или скачай файл в «Файлы» и открой оттуда.
+				<label class="check">
+					<input id="deleteOld" type="checkbox">
+					<span><span class="warn">Опасно:</span> удалить старые файлы репозитория перед заливкой архива. Не трогает <code>.github/</code>.</span>
+				</label>
+
+				<button id="test" type="button" class="secondary">Проверить кнопку</button>
+				<button id="deploy" type="button">Распаковать ZIP и залить в GitHub</button>
+				<button id="save" type="button" class="secondary">Сохранить owner/repo/branch</button>
+
+				<div id="result" class="result"></div>
+			</div>
+
+			<div class="card">
+				<div id="status" class="status">Страница загружена. Нажми «Проверить кнопку».</div>
+			</div>
+		</section>
+
+		<section class="card">
+			<p class="hint">
+				Работает без внешних библиотек: ZIP распаковывается через встроенный в браузер <code>DecompressionStream</code>.
+				Открывай деплоер по HTTPS через GitHub Pages, а не внутри предпросмотра ChatGPT.
+				Для токена нужны права <code>Contents: Read and write</code> на репозиторий сайта.
 			</p>
-		</div>
+		</section>
 	</main>
 
 	<script>
-		(function () {
-			const status = document.getElementById("status");
-			const testBtn = document.getElementById("testBtn");
-			const deployBtn = document.getElementById("deployBtn");
-			const clearBtn = document.getElementById("clearBtn");
+		const $ = (id) => document.getElementById(id);
 
-			function log(message, type) {
-				const time = new Date().toLocaleTimeString();
-				const prefix = type === "good" ? "✅" : type === "bad" ? "❌" : "•";
-				status.innerHTML += "\n" + prefix + " [" + time + "] " + escapeHtml(message);
-				status.scrollTop = status.scrollHeight;
+		const state = {
+			owner: $("owner"),
+			repo: $("repo"),
+			branch: $("branch"),
+			message: $("message"),
+			token: $("token"),
+			zip: $("zip"),
+			stripRoot: $("stripRoot"),
+			ignoreSystem: $("ignoreSystem"),
+			deleteOld: $("deleteOld"),
+			test: $("test"),
+			deploy: $("deploy"),
+			save: $("save"),
+			status: $("status"),
+			result: $("result")
+		};
+
+		const saved = JSON.parse(localStorage.getItem("zipDeploySettings") || "{}");
+		if (saved.owner) state.owner.value = saved.owner;
+		if (saved.repo) state.repo.value = saved.repo;
+		if (saved.branch) state.branch.value = saved.branch;
+
+		function log(text, type) {
+			const time = new Date().toLocaleTimeString();
+			const icon = type === "good" ? "✅" : type === "bad" ? "❌" : "•";
+			state.status.textContent += "\n" + icon + " [" + time + "] " + text;
+			state.status.scrollTop = state.status.scrollHeight;
+		}
+
+		function reset(text) {
+			state.status.textContent = text;
+		}
+
+		function u16(data, offset) {
+			return data[offset] | (data[offset + 1] << 8);
+		}
+
+		function u32(data, offset) {
+			return (data[offset] | (data[offset + 1] << 8) | (data[offset + 2] << 16) | (data[offset + 3] << 24)) >>> 0;
+		}
+
+		function decodeName(bytes) {
+			return new TextDecoder("utf-8").decode(bytes);
+		}
+
+		function normalizePath(path) {
+			return path
+				.replace(/\\/g, "/")
+				.replace(/^\/+/, "")
+				.replace(/\/+/g, "/");
+		}
+
+		function isIgnored(path) {
+			if (!state.ignoreSystem.checked) return false;
+			return (
+				path.includes("__MACOSX/") ||
+				path.endsWith(".DS_Store") ||
+				path.endsWith("wordpress-image-snippets.php")
+			);
+		}
+
+		function stripCommonRoot(entries) {
+			const paths = entries.map((e) => e.path).filter(Boolean);
+			if (!paths.length) return entries;
+
+			const first = paths[0].split("/");
+			if (first.length < 2) return entries;
+
+			const root = first[0] + "/";
+			const allShare = paths.every((p) => p.startsWith(root) && p !== root);
+			if (!allShare) return entries;
+
+			log("Убрана верхняя папка архива: " + root);
+			return entries.map((e) => ({
+				...e,
+				path: normalizePath(e.path.slice(root.length))
+			})).filter((e) => e.path);
+		}
+
+		async function inflateRaw(bytes) {
+			if (!("DecompressionStream" in window)) {
+				throw new Error("Браузер не поддерживает DecompressionStream. Открой деплоер в свежем Safari/Chrome по HTTPS.");
 			}
 
-			function setLog(message) {
-				status.textContent = message;
+			const stream = new Blob([bytes]).stream().pipeThrough(new DecompressionStream("deflate-raw"));
+			const arrayBuffer = await new Response(stream).arrayBuffer();
+			return new Uint8Array(arrayBuffer);
+		}
+
+		async function parseZip(file) {
+			const buffer = await file.arrayBuffer();
+			const data = new Uint8Array(buffer);
+
+			if (data.length < 22) {
+				throw new Error("ZIP слишком маленький или повреждён.");
 			}
 
-			function escapeHtml(str) {
-				return String(str)
-					.replaceAll("&", "&amp;")
-					.replaceAll("<", "&lt;")
-					.replaceAll(">", "&gt;");
+			let eocd = -1;
+			for (let i = data.length - 22; i >= Math.max(0, data.length - 66000); i--) {
+				if (u32(data, i) === 0x06054b50) {
+					eocd = i;
+					break;
+				}
 			}
 
-			window.addEventListener("error", function (event) {
-				log("Ошибка JS: " + event.message, "bad");
-			});
+			if (eocd < 0) {
+				throw new Error("Не найден конец центрального каталога ZIP. Возможно, архив повреждён.");
+			}
 
-			window.addEventListener("unhandledrejection", function (event) {
-				log("Promise error: " + (event.reason && event.reason.message ? event.reason.message : event.reason), "bad");
-			});
+			const totalEntries = u16(data, eocd + 10);
+			const centralOffset = u32(data, eocd + 16);
+			let ptr = centralOffset;
+			let entries = [];
 
-			testBtn.addEventListener("click", function () {
-				log("Кнопка работает. JavaScript в этом окне выполняется.", "good");
-			});
-
-			clearBtn.addEventListener("click", function () {
-				setLog("Лог очищен.");
-			});
-
-			deployBtn.addEventListener("click", async function () {
-				log("Клик по кнопке деплоя получен.", "good");
-
-				const owner = document.getElementById("owner").value.trim();
-				const repo = document.getElementById("repo").value.trim();
-				const branch = document.getElementById("branch").value.trim();
-				const token = document.getElementById("token").value.trim();
-				const zip = document.getElementById("zip").files[0];
-
-				if (!owner || !repo || !branch || !token || !zip) {
-					log("Не все поля заполнены. Нужно owner, repo, branch, token и ZIP.", "bad");
-					return;
+			for (let i = 0; i < totalEntries; i++) {
+				if (u32(data, ptr) !== 0x02014b50) {
+					throw new Error("Ошибка чтения central directory ZIP на файле #" + (i + 1));
 				}
 
-				log("Поля заполнены. Дальше нужна полная версия деплоера с распаковкой ZIP.", "good");
-				log("Если обычный деплоер молчит, значит он не выполняется в текущем просмотрщике или не загрузилась библиотека JSZip.", "bad");
+				const flags = u16(data, ptr + 8);
+				const compression = u16(data, ptr + 10);
+				const compressedSize = u32(data, ptr + 20);
+				const uncompressedSize = u32(data, ptr + 24);
+				const fileNameLength = u16(data, ptr + 28);
+				const extraLength = u16(data, ptr + 30);
+				const commentLength = u16(data, ptr + 32);
+				const localOffset = u32(data, ptr + 42);
+				const nameBytes = data.slice(ptr + 46, ptr + 46 + fileNameLength);
+				const path = normalizePath(decodeName(nameBytes));
+
+				ptr += 46 + fileNameLength + extraLength + commentLength;
+
+				if (!path || path.endsWith("/") || isIgnored(path)) continue;
+				if (flags & 0x01) throw new Error("ZIP содержит зашифрованный файл: " + path);
+				if (compression !== 0 && compression !== 8) {
+					throw new Error("Неподдерживаемый метод сжатия " + compression + " у файла: " + path);
+				}
+
+				if (u32(data, localOffset) !== 0x04034b50) {
+					throw new Error("Ошибка чтения local header у файла: " + path);
+				}
+
+				const localNameLength = u16(data, localOffset + 26);
+				const localExtraLength = u16(data, localOffset + 28);
+				const contentStart = localOffset + 30 + localNameLength + localExtraLength;
+				const compressed = data.slice(contentStart, contentStart + compressedSize);
+
+				entries.push({
+					path,
+					compression,
+					compressed,
+					uncompressedSize
+				});
+			}
+
+			if (state.stripRoot.checked) entries = stripCommonRoot(entries);
+			if (!entries.length) throw new Error("В ZIP не найдено файлов для загрузки.");
+
+			return entries;
+		}
+
+		function arrayBufferToBase64(buffer) {
+			const bytes = buffer instanceof Uint8Array ? buffer : new Uint8Array(buffer);
+			const chunkSize = 0x8000;
+			let binary = "";
+			for (let i = 0; i < bytes.length; i += chunkSize) {
+				binary += String.fromCharCode.apply(null, bytes.subarray(i, i + chunkSize));
+			}
+			return btoa(binary);
+		}
+
+		async function gh(path, options = {}) {
+			const owner = state.owner.value.trim();
+			const repo = state.repo.value.trim();
+			const token = state.token.value.trim();
+
+			const response = await fetch(`https://api.github.com/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}${path}`, {
+				...options,
+				headers: {
+					"Accept": "application/vnd.github+json",
+					"Authorization": `Bearer ${token}`,
+					"X-GitHub-Api-Version": "2022-11-28",
+					...(options.headers || {})
+				}
 			});
 
-			setLog("JavaScript работает. Нажми «Проверить кнопку».");
-		})();
+			const text = await response.text();
+			let data = null;
+			try { data = text ? JSON.parse(text) : null; } catch { data = text; }
+
+			if (!response.ok) {
+				const error = new Error((data && data.message) ? data.message : response.statusText);
+				error.status = response.status;
+				error.data = data;
+				throw error;
+			}
+
+			return data;
+		}
+
+		async function getBranchState(branch) {
+			const ref = await gh(`/git/ref/heads/${encodeURIComponent(branch)}`);
+			const headSha = ref.object.sha;
+			const commit = await gh(`/git/commits/${headSha}`);
+			return { headSha, baseTreeSha: commit.tree.sha };
+		}
+
+		async function getExistingTree(baseTreeSha) {
+			const tree = await gh(`/git/trees/${baseTreeSha}?recursive=1`);
+			return (tree.tree || []).filter((item) => item.type === "blob");
+		}
+
+		state.test.addEventListener("click", () => {
+			log("Кнопка работает. JavaScript выполняется.", "good");
+			if ("DecompressionStream" in window) {
+				log("DecompressionStream доступен. ZIP с deflate должен распаковаться.", "good");
+			} else {
+				log("DecompressionStream недоступен. ZIP-распаковка не сработает в этом браузере.", "bad");
+			}
+		});
+
+		state.save.addEventListener("click", () => {
+			localStorage.setItem("zipDeploySettings", JSON.stringify({
+				owner: state.owner.value.trim(),
+				repo: state.repo.value.trim(),
+				branch: state.branch.value.trim() || "main"
+			}));
+			log("owner/repo/branch сохранены на этом устройстве.", "good");
+		});
+
+		state.deploy.addEventListener("click", async () => {
+			reset("Запуск ZIP-деплоя...");
+			state.result.style.display = "none";
+
+			const owner = state.owner.value.trim();
+			const repo = state.repo.value.trim();
+			const branch = state.branch.value.trim() || "main";
+			const token = state.token.value.trim();
+			const zipFile = state.zip.files[0];
+
+			if (!owner || !repo || !branch || !token || !zipFile) {
+				log("Заполни owner, repo, branch, token и выбери ZIP.", "bad");
+				return;
+			}
+
+			state.deploy.disabled = true;
+
+			try {
+				log("Читаю ZIP...");
+				let entries = await parseZip(zipFile);
+				log("Файлов в архиве к заливке: " + entries.length, "good");
+
+				log("Проверяю ветку " + branch + "...");
+				const { headSha, baseTreeSha } = await getBranchState(branch);
+				log("Текущий commit: " + headSha.slice(0, 7), "good");
+
+				const tree = [];
+
+				if (state.deleteOld.checked) {
+					log("Получаю список старых файлов для удаления...");
+					const existing = await getExistingTree(baseTreeSha);
+					let deleted = 0;
+					for (const item of existing) {
+						if (item.path.startsWith(".github/")) continue;
+						tree.push({
+							path: item.path,
+							mode: "100644",
+							type: "blob",
+							sha: null
+						});
+						deleted++;
+					}
+					log("Будет удалено старых файлов: " + deleted);
+				}
+
+				for (let i = 0; i < entries.length; i++) {
+					const entry = entries[i];
+					log(`Распаковываю ${i + 1}/${entries.length}: ${entry.path}`);
+
+					let contentBytes;
+					if (entry.compression === 0) {
+						contentBytes = entry.compressed;
+					} else {
+						contentBytes = await inflateRaw(entry.compressed);
+					}
+
+					if (entry.uncompressedSize && contentBytes.length !== entry.uncompressedSize) {
+						log(`Предупреждение: размер ${entry.path} отличается от ожидаемого.`);
+					}
+
+					const blob = await gh("/git/blobs", {
+						method: "POST",
+						body: JSON.stringify({
+							content: arrayBufferToBase64(contentBytes),
+							encoding: "base64"
+						})
+					});
+
+					tree.push({
+						path: entry.path,
+						mode: "100644",
+						type: "blob",
+						sha: blob.sha
+					});
+				}
+
+				log("Создаю git tree...");
+				const newTree = await gh("/git/trees", {
+					method: "POST",
+					body: JSON.stringify({
+						base_tree: baseTreeSha,
+						tree
+					})
+				});
+
+				log("Создаю commit...");
+				const newCommit = await gh("/git/commits", {
+					method: "POST",
+					body: JSON.stringify({
+						message: state.message.value.trim() || "Deploy website from ZIP",
+						tree: newTree.sha,
+						parents: [headSha]
+					})
+				});
+
+				log("Обновляю ветку...");
+				await gh(`/git/refs/heads/${encodeURIComponent(branch)}`, {
+					method: "PATCH",
+					body: JSON.stringify({
+						sha: newCommit.sha,
+						force: false
+					})
+				});
+
+				const site = `https://${owner}.github.io/${repo}/`;
+				log("Готово. Commit: " + newCommit.sha.slice(0, 7), "good");
+				log("GitHub Pages может обновляться 1–2 минуты: " + site, "good");
+
+				state.result.innerHTML = `Готово. Проверь сайт через 1–2 минуты:<br><a href="${site}" target="_blank" rel="noopener noreferrer">${site}</a>`;
+				state.result.style.display = "block";
+			} catch (err) {
+				console.error(err);
+				log((err.status ? err.status + " " : "") + (err.message || String(err)), "bad");
+
+				if (err.status === 401) log("Токен неверный или истёк.", "bad");
+				if (err.status === 403) log("Токену не хватает прав. Нужен Contents: Read and write.", "bad");
+				if (err.status === 404) log("Репозиторий/ветка не найдены или токен не имеет доступа.", "bad");
+			} finally {
+				state.deploy.disabled = false;
+			}
+		});
+
+		window.addEventListener("error", (event) => {
+			log("JS ошибка: " + event.message, "bad");
+		});
+
+		window.addEventListener("unhandledrejection", (event) => {
+			log("Promise error: " + (event.reason && event.reason.message ? event.reason.message : event.reason), "bad");
+		});
 	</script>
 </body>
 </html>
